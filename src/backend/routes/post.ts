@@ -1,13 +1,9 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router } from 'express';
 import { getPosts, getPost, createPost, updatePost, deletePost } from '../controllers/post';
 
-const router = Router();
+import asyncHandler from '../middleware/asyncHandler';
 
-const asyncHandler =
-	(fn: (req: Request, res: Response, next: NextFunction) => Promise<Response>) =>
-	(req: Request, res: Response, next: NextFunction) => {
-		fn(req, res, next).catch(next);
-	};
+const router = Router();
 
 router.get('/', asyncHandler(getPosts));
 router.get('/:id', asyncHandler(getPost));

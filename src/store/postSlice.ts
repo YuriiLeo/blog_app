@@ -1,20 +1,6 @@
-import api from '@/utils/api';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-
-interface Post {
-	id: number;
-	title: string;
-	content: string;
-	createdAt: string;
-	updatedAt: string;
-}
-
-interface PostState {
-	posts: Post[];
-	post: Post | null;
-	loading: boolean;
-	error: string | null;
-}
+import { PostState } from '../types/post';
+import * as postsAPI from '../api/posts';
 
 const initialState: PostState = {
 	posts: [],
@@ -23,39 +9,18 @@ const initialState: PostState = {
 	error: null,
 };
 
-export const fetchPosts = createAsyncThunk('posts/fetchPosts', async () => {
-	const response = await api.get('/posts');
-	return response.data;
-});
+export const fetchPosts = createAsyncThunk('posts/fetchPosts', postsAPI.fetchPosts);
 
-export const createPost = createAsyncThunk(
-	'posts/createPost',
-	async ({ title, content }: { title: string; content: string }) => {
-		const response = await api.post('/posts', { title, content });
-		return response.data;
-	},
-);
+export const createPost = createAsyncThunk('posts/createPost', postsAPI.createPost);
 
 export const fetchPostByPostId = createAsyncThunk(
-	'posts/fetchCommentsByPostId',
-	async (id: number) => {
-		const response = await api.get(`/posts/${id}`);
-		return response.data;
-	},
+	'posts/fetchPostByPostId',
+	postsAPI.fetchPostByPostId,
 );
 
-export const updatePost = createAsyncThunk(
-	'posts/updatePost',
-	async ({ postId, title, content }: { postId: number; title: string; content: string }) => {
-		const response = await api.put(`/posts/${postId}`, { title, content });
-		return response.data;
-	},
-);
+export const updatePost = createAsyncThunk('posts/updatePost', postsAPI.updatePost);
 
-export const deletePost = createAsyncThunk('posts/deletePost', async (postId: number) => {
-	await api.delete(`/posts/${postId}`);
-	return postId;
-});
+export const deletePost = createAsyncThunk('posts/deletePost', postsAPI.deletePost);
 
 const postSlice = createSlice({
 	name: 'posts',
@@ -97,7 +62,7 @@ const postSlice = createSlice({
 			})
 			.addCase(fetchPostByPostId.rejected, (state, action) => {
 				state.loading = false;
-				state.error = action.error.message || 'Failed to fetch comments';
+				state.error = action.error.message || 'Failed to fetch post';
 			})
 			.addCase(updatePost.pending, (state) => {
 				state.loading = true;
@@ -112,7 +77,7 @@ const postSlice = createSlice({
 			})
 			.addCase(updatePost.rejected, (state, action) => {
 				state.loading = false;
-				state.error = action.error.message || 'Failed to fetch comments';
+				state.error = action.error.message || 'Failed to update post';
 			})
 			.addCase(deletePost.pending, (state) => {
 				state.loading = true;
@@ -124,7 +89,7 @@ const postSlice = createSlice({
 			})
 			.addCase(deletePost.rejected, (state, action) => {
 				state.loading = false;
-				state.error = action.error.message || 'Failed to fetch comments';
+				state.error = action.error.message || 'Failed to delete post';
 			});
 	},
 });

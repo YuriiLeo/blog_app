@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { addComment } from '../store/commentSlice';
-import { Button, Box, TextField, Typography } from '@mui/material';
+import { Button, Box, TextField, Typography, Snackbar } from '@mui/material';
 import { useAppDispatch } from '@/hooks';
 
 interface AddCommentProps {
@@ -11,6 +11,8 @@ interface AddCommentProps {
 
 const AddComment: React.FC<AddCommentProps> = ({ postId }) => {
 	const [content, setContent] = useState('');
+	const [openSnackbar, setOpenSnackbar] = useState(false);
+	const [snackbarMessage, setSnackbarMessage] = useState('');
 	const dispatch = useAppDispatch();
 
 	const handleSubmit = (e: React.FormEvent) => {
@@ -18,9 +20,17 @@ const AddComment: React.FC<AddCommentProps> = ({ postId }) => {
 		try {
 			dispatch(addComment({ postId, content }));
 			setContent('');
+			setSnackbarMessage('Comment added successfully');
 		} catch (error) {
+			setSnackbarMessage('Failed to create comment');
 			console.error('Failed to create comment:', error);
+		} finally {
+			setOpenSnackbar(true);
 		}
+	};
+
+	const handleCloseSnackbar = () => {
+		setOpenSnackbar(false);
 	};
 
 	return (
@@ -44,6 +54,12 @@ const AddComment: React.FC<AddCommentProps> = ({ postId }) => {
 					Create Comment
 				</Button>
 			</Box>
+			<Snackbar
+				open={openSnackbar}
+				autoHideDuration={6000}
+				onClose={handleCloseSnackbar}
+				message={snackbarMessage}
+			/>
 		</Box>
 	);
 };

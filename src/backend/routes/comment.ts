@@ -1,4 +1,4 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router } from 'express';
 import {
 	getComment,
 	createComment,
@@ -6,14 +6,9 @@ import {
 	deleteComment,
 	getCommentsByPostId,
 } from '../controllers/comment';
+import asyncHandler from '../middleware/asyncHandler';
 
 const router = Router();
-
-const asyncHandler =
-	(fn: (req: Request, res: Response, next: NextFunction) => Promise<Response | void>) =>
-	(req: Request, res: Response, next: NextFunction) => {
-		fn(req, res, next).catch(next);
-	};
 
 router.get('/post/:postId', asyncHandler(getCommentsByPostId));
 router.get('/:id', asyncHandler(getComment));

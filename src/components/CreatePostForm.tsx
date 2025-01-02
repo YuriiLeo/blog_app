@@ -1,22 +1,38 @@
 import React, { useState } from 'react';
-import { TextField, Button, Box, Typography } from '@mui/material';
+import { TextField, Button, Box, Typography, Snackbar } from '@mui/material';
 import { createPost } from '../store/postSlice';
 import { useAppDispatch } from '@/hooks';
 
 const CreatePostForm: React.FC = () => {
 	const [title, setTitle] = useState('');
 	const [content, setContent] = useState('');
+	const [openSnackbar, setOpenSnackbar] = useState(false);
+	const [snackbarMessage, setSnackbarMessage] = useState('');
 	const dispatch = useAppDispatch();
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
+		if (!title || !content) {
+			setSnackbarMessage('Title and content are required');
+			setOpenSnackbar(true);
+			return;
+		}
+
 		try {
 			dispatch(createPost({ title, content }));
 			setTitle('');
 			setContent('');
+			setSnackbarMessage('Post created successfully');
 		} catch (error) {
+			setSnackbarMessage('Failed to create post');
 			console.error('Failed to create post:', error);
+		} finally {
+			setOpenSnackbar(true);
 		}
+	};
+
+	const handleCloseSnackbar = () => {
+		setOpenSnackbar(false);
 	};
 
 	return (
@@ -47,6 +63,12 @@ const CreatePostForm: React.FC = () => {
 					Create Post
 				</Button>
 			</Box>
+			<Snackbar
+				open={openSnackbar}
+				autoHideDuration={6000}
+				onClose={handleCloseSnackbar}
+				message={snackbarMessage}
+			/>
 		</Box>
 	);
 };

@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import { fetchCommentsByPostId, clearComments } from '../store/commentSlice';
 import { fetchPostByPostId, deletePost, updatePost } from '../store/postSlice';
 import { RootState } from '../store';
-import { Button, TextField, Box, Typography, CircularProgress } from '@mui/material';
+import { Button, TextField, Box, Typography, CircularProgress, Snackbar } from '@mui/material';
 import { useAppDispatch } from '../hooks';
 
 const PostDetails: React.FC = () => {
@@ -26,6 +26,8 @@ const PostDetails: React.FC = () => {
 	const [isEditingPost, setIsEditingPost] = useState(false);
 	const [postTitle, setPostTitle] = useState('');
 	const [postContent, setPostContent] = useState('');
+	const [openSnackbar, setOpenSnackbar] = useState(false);
+	const [snackbarMessage, setSnackbarMessage] = useState('');
 
 	useEffect(() => {
 		if (id) {
@@ -44,17 +46,37 @@ const PostDetails: React.FC = () => {
 
 	const handlePostUpdate = async () => {
 		if (id) {
-			await dispatch(updatePost({ postId: Number(id), title: postTitle, content: postContent }));
-			setIsEditingPost(false);
-			dispatch(fetchPostByPostId(Number(id)));
+			try {
+				await dispatch(updatePost({ postId: Number(id), title: postTitle, content: postContent }));
+				setIsEditingPost(false);
+				setSnackbarMessage('Post updated successfully');
+			} catch (error) {
+				setSnackbarMessage('Failed to update post');
+				console.error('Failed to update post:', error);
+			} finally {
+				setOpenSnackbar(true);
+				dispatch(fetchPostByPostId(Number(id)));
+			}
 		}
 	};
 
 	const handlePostDelete = async () => {
 		if (id) {
-			await dispatch(deletePost(Number(id)));
-			router.push('/');
+			try {
+				await dispatch(deletePost(Number(id)));
+				setSnackbarMessage('Post deleted successfully');
+				router.push('/');
+			} catch (error) {
+				setSnackbarMessage('Failed to delete post');
+				console.error('Failed to delete post:', error);
+			} finally {
+				setOpenSnackbar(true);
+			}
 		}
+	};
+
+	const handleCloseSnackbar = () => {
+		setOpenSnackbar(false);
 	};
 
 	if (commentsLoading || postLoading) {
@@ -110,28 +132,27 @@ const PostDetails: React.FC = () => {
 						<Button variant="contained" onClick={() => setIsEditingPost(true)} sx={{ margin: 1 }}>
 							Edit Post
 						</Button>
-						<Button variant="contained" color="error" onClick={handlePostDelete} sx={{ margin: 1 }}>
+						<Button variant="contained" onClick={handlePostDelete} color="error" sx={{ margin: 1 }}>
 							Delete Post
 						</Button>
 					</Box>
 				)
 			)}
-			<Typography variant="h5" sx={{ marginTop: 4 }}>
+
+			<Typography variant="h6" sx={{ marginTop: 3 }}>
 				Comments
 			</Typography>
-			{comments && comments.length > 0 ? (
-				<Box>
-					{comments.map((comment) => (
-						<Box key={comment.id} sx={{ marginBottom: 2 }}>
-							<Typography variant="body1">{comment.content}</Typography>
-						</Box>
-					))}
+			{comments.map((comment) => (
+				<Box key={comment.id} sx={{ borderBottom: 1, paddingBottom: 2, marginBottom: 2 }}>
+					<Typography variant="body1">{comment.content}</Typography>
 				</Box>
-			) : (
-				<Typography sx={{ margin: 2 }} variant="body1">
-					Unfortunately, there are no comments, be the first to leave a comment.
-				</Typography>
-			)}
+			))}
+			<Snackbar
+				open={openSnackbar}
+				autoHideDuration={6000}
+				onClose={handleCloseSnackbar}
+				message={snackbarMessage}
+			/>
 		</Box>
 	);
 };
