@@ -1,9 +1,3 @@
-Here's a comprehensive README for your project, "blog_app":
-
----
-
-# Blog App
-
 ## Overview
 
 This is a full-stack blog application built with Next.js for the frontend and Express.js for the backend. The application uses TypeORM to interact with a PostgreSQL database and features modern web development tools and best practices.
